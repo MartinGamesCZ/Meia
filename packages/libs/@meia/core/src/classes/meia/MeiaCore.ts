@@ -10,7 +10,8 @@ export enum EMeiaCoreAPIMethod {
 
   WindowCreate = "MeiaCoreAPI.WindowCreate",
   WindowSetTitle = "MeiaCoreAPI.WindowSetTitle",
-  WindowSetSize = "MeiaCoreAPI.WindowSetSize",
+  WindowSetDefaultSize = "MeiaCoreAPI.WindowSetDefaultSize",
+  WindowResize = "MeiaCoreAPI.WindowResize",
   WindowShow = "MeiaCoreAPI.WindowShow",
 }
 

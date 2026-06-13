@@ -1,11 +1,15 @@
 package meia_application
 
-import "meia/core/src/gtk"
+var InitChan = make(chan struct{})
+var StartChan = make(chan struct{})
 
+// Initialize app
 func Init() {
-	gtk.GtkInit()
+	InitChan <- struct{}{}
 }
 
+// Start main loop
 func StartLoop() {
-	go gtk.GtkMain()
+	StartChan <- struct{}{}
 }
+

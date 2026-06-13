@@ -49,6 +49,8 @@ export class MeiaWindow {
   async #_create() {
     const { Id } = await MeiaApplication._core.window.WindowCreate();
     this.#id = Id;
+
+    await this.#_setDefaultSize();
   }
 
   async #setProperties() {
@@ -67,10 +69,20 @@ export class MeiaWindow {
     });
   }
 
+  async #_setDefaultSize() {
+    if (!this.#id) throw MeiaException.Error("Window not created");
+
+    await MeiaApplication._core.window.WindowSetDefaultSize({
+      Id: this.#id,
+      Width: this.#options.width,
+      Height: this.#options.height,
+    });
+  }
+
   async #_setSize() {
     if (!this.#id) throw MeiaException.Error("Window not created");
 
-    await MeiaApplication._core.window.WindowSetSize({
+    await MeiaApplication._core.window.WindowResize({
       Id: this.#id,
       Width: this.#options.width,
       Height: this.#options.height,

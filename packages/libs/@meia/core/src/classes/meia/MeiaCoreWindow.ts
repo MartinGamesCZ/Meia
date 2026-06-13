@@ -20,12 +20,20 @@ export class MeiaCoreWindow {
     await this.#coreRpc.call(EMeiaCoreAPIMethod.WindowSetTitle, data);
   }
 
-  async WindowSetSize(data: {
+  async WindowSetDefaultSize(data: {
     Id: string;
     Width: number;
     Height: number;
   }): Promise<void> {
-    await this.#coreRpc.call(EMeiaCoreAPIMethod.WindowSetSize, data);
+    await this.#coreRpc.call(EMeiaCoreAPIMethod.WindowSetDefaultSize, data);
+  }
+
+  async WindowResize(data: {
+    Id: string;
+    Width: number;
+    Height: number;
+  }): Promise<void> {
+    await this.#coreRpc.call(EMeiaCoreAPIMethod.WindowResize, data);
   }
 
   async WindowShow(data: { Id: string }): Promise<void> {

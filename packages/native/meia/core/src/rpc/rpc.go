@@ -16,10 +16,12 @@ type StdioReadWriteCloser struct {
 	io.Writer
 }
 
+// Implements io.Closer interface
 func (StdioReadWriteCloser) Close() error {
 	return nil
 }
 
+// Create a new rpc server and bind to stdio
 func StartRpcServer(api interface{}) {
 	server := rpc.NewServer()
 	server.Register(api)

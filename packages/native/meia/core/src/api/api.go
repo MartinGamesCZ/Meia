@@ -1,25 +1,24 @@
 package api
 
 import (
+	"meia/core/src/gtk"
 	meia_application "meia/core/src/meia/application"
 	meia_window "meia/core/src/meia/window"
 )
 
 type MeiaCoreAPI struct {
-	//InitChan chan struct{}
 	Windows map[string]*meia_window.MeiaWindow
 }
 
 func InitMeiaCoreAPI() *MeiaCoreAPI {
 	return &MeiaCoreAPI{
-		//InitChan: make(chan struct{}),
 		Windows: make(map[string]*meia_window.MeiaWindow),
 	}
 }
 
+// MeiaCoreAPI.ApplicationInit RPC method
 func (api *MeiaCoreAPI) ApplicationInit(args *struct{}, reply *struct{}) error {
 	meia_application.Init()
-	//close(api.InitChan)
 	return nil
 }
 
@@ -27,10 +26,18 @@ type WindowCreateReply struct {
 	Id string
 }
 
+// MeiaCoreAPI.WindowCreate RPC method
 func (api *MeiaCoreAPI) WindowCreate(args *struct{}, reply *WindowCreateReply) error {
-	window := meia_window.Create()
-	api.Windows[window.GetId()] = window
+	done := make(chan struct{})
+	var window *meia_window.MeiaWindow
 
+	gtk.Dispatch(func() {
+		window = meia_window.Create()
+		done <- struct{}{}
+	})
+	<-done
+
+	api.Windows[window.GetId()] = window
 	reply.Id = window.GetId()
 
 	return nil
@@ -41,8 +48,16 @@ type WindowSetTitleArgs struct {
 	Title string
 }
 
+// MeiaCoreAPI.WindowSetTitle RPC method
 func (api *MeiaCoreAPI) WindowSetTitle(args *WindowSetTitleArgs, reply *struct{}) error {
-	api.Windows[args.Id].SetTitle(args.Title)
+	done := make(chan struct{})
+
+	gtk.Dispatch(func() {
+		api.Windows[args.Id].SetTitle(args.Title)
+		done <- struct{}{}
+	})
+
+	<-done
 	return nil
 }
 
@@ -52,11 +67,39 @@ type WindowSetSizeArgs struct {
 	Height int
 }
 
-func (api *MeiaCoreAPI) WindowSetSize(args *WindowSetSizeArgs, reply *struct{}) error {
-	api.Windows[args.Id].SetSize(args.Width, args.Height)
+// MeiaCoreAPI.WindowSetDefaultSize RPC method
+func (api *MeiaCoreAPI) WindowSetDefaultSize(args *WindowSetSizeArgs, reply *struct{}) error {
+	done := make(chan struct{})
+
+	gtk.Dispatch(func() {
+		api.Windows[args.Id].SetDefaultSize(args.Width, args.Height)
+		done <- struct{}{}
+	})
+
+	<-done
 	return nil
 }
 
+type WindowResizeArgs struct {
+	Id     string
+	Width  int
+	Height int
+}
+
+// MeiaCoreAPI.WindowResize RPC method
+func (api *MeiaCoreAPI) WindowResize(args *WindowResizeArgs, reply *struct{}) error {
+	done := make(chan struct{})
+
+	gtk.Dispatch(func() {
+		api.Windows[args.Id].Resize(args.Width, args.Height)
+		done <- struct{}{}
+	})
+
+	<-done
+	return nil
+}
+
+// MeiaCoreAPI.ApplicationStartLoop RPC method
 func (api *MeiaCoreAPI) ApplicationStartLoop(args *struct{}, reply *struct{}) error {
 	meia_application.StartLoop()
 	return nil
@@ -66,7 +109,15 @@ type WindowShowArgs struct {
 	Id string
 }
 
+// MeiaCoreAPI.WindowShow RPC method
 func (api *MeiaCoreAPI) WindowShow(args *WindowShowArgs, reply *struct{}) error {
-	api.Windows[args.Id].Show()
+	done := make(chan struct{})
+
+	gtk.Dispatch(func() {
+		api.Windows[args.Id].Show()
+		done <- struct{}{}
+	})
+
+	<-done
 	return nil
 }
