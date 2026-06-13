@@ -1,0 +1,5 @@
+packages:
+  - packages/libs/*
+  - test-project
+allowBuilds:
+  esbuild: true
