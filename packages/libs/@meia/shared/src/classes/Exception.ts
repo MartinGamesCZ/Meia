@@ -37,3 +37,7 @@ process.on("uncaughtException", (error) => {
 
   console.log(chalk.redBright(error.stack));
 });
+
+process.on("unhandledRejection", (reason, promise) => {
+  logger.fatal(reason);
+});

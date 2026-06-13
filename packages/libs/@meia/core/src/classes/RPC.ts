@@ -1,6 +1,12 @@
-import { MeiaEventEmitter, MeiaException, MeiaLogger } from "@meia/shared";
+import {
+  MeiaEventEmitter,
+  MeiaException,
+  MeiaExceptionError,
+  MeiaLogger,
+} from "@meia/shared";
 import { spawn, type ChildProcess } from "child_process";
 import { randomUUID } from "crypto";
+import type { EMeiaCoreAPIMethod } from "./meia/MeiaCore";
 
 type MeiaRPCEventNames = "exit" | "response";
 
@@ -9,6 +15,9 @@ export class MeiaRPC extends MeiaEventEmitter<MeiaRPCEventNames> {
   #command: string[];
   #process: ChildProcess;
   #isRunning: boolean = true;
+  #exitHandler = () => {
+    this.kill();
+  };
 
   get isRunning() {
     return this.#isRunning;
@@ -26,10 +35,23 @@ export class MeiaRPC extends MeiaEventEmitter<MeiaRPCEventNames> {
     this.#process.on("exit", (code) => this.#handleExit(code ?? -1));
     this.#process.on("spawn", () => (this.#isRunning = true));
     this.#process.stdout?.on("data", this.#handleData.bind(this));
+    this.#process.stderr?.on("data", this.#handleData.bind(this));
+
+    process.on("exit", this.#exitHandler);
   }
 
-  async call(method: string, params: unknown) {
+  kill() {
+    if (this.#isRunning) {
+      this.#process.kill();
+      this.#isRunning = false;
+      process.off("exit", this.#exitHandler);
+    }
+  }
+
+  async call(method: EMeiaCoreAPIMethod, params: unknown) {
     const id = randomUUID();
+
+    this.#logger.debug(`Calling "${method}" with ID: ${id}`);
 
     this.#process.stdin?.write(
       JSON.stringify({
@@ -67,10 +89,15 @@ export class MeiaRPC extends MeiaEventEmitter<MeiaRPCEventNames> {
     const json = chunk.toString();
 
     try {
-      const { id, result } = JSON.parse(json);
+      const { id, result, error } = JSON.parse(json);
 
+      if (error) throw MeiaException.Error(error);
+
+      this.#logger.debug(`Got response for "${id}"`);
       this.emit("response", id, result);
-    } catch (_) {}
+    } catch (e) {
+      if (e instanceof MeiaExceptionError) throw e;
+    }
   }
 
   #handleError() {
@@ -91,6 +118,7 @@ export class MeiaRPC extends MeiaEventEmitter<MeiaRPCEventNames> {
     if (!this.#isRunning) return;
 
     this.#isRunning = false;
+    process.off("exit", this.#exitHandler);
     this.emit("exit", code);
   }
 }

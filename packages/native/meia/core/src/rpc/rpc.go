@@ -29,7 +29,5 @@ func StartRpcServer(api interface{}) {
 		Writer: os.Stdout,
 	}
 
-	for {
-		server.ServeCodec(jsonrpc.NewServerCodec(inout))
-	}
+	server.ServeCodec(jsonrpc.NewServerCodec(inout))
 }

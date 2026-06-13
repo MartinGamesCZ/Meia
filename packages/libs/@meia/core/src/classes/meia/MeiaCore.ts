@@ -1,18 +1,29 @@
 import { MeiaException } from "@meia/shared";
 import { MeiaRPC } from "../RPC";
 import { MeiaEnvironment } from "./MeiaEnvironment";
+import { MeiaCoreApplication } from "./MeiaCoreApplication";
+import { MeiaCoreWindow } from "./MeiaCoreWindow";
+
+export enum EMeiaCoreAPIMethod {
+  ApplicationInit = "MeiaCoreAPI.ApplicationInit",
+  ApplicationStartLoop = "MeiaCoreAPI.ApplicationStartLoop",
+
+  WindowCreate = "MeiaCoreAPI.WindowCreate",
+  WindowSetTitle = "MeiaCoreAPI.WindowSetTitle",
+  WindowSetSize = "MeiaCoreAPI.WindowSetSize",
+  WindowShow = "MeiaCoreAPI.WindowShow",
+}
 
 export class MeiaCore {
   #meiaCoreRPC: MeiaRPC;
 
-  get rpc() {
-    return {
-      core: this.#meiaCoreRPC,
-    };
-  }
+  public readonly application: MeiaCoreApplication;
+  public readonly window: MeiaCoreWindow;
 
   constructor() {
     this.#meiaCoreRPC = new MeiaRPC([MeiaEnvironment.paths.native.core]);
+    this.application = new MeiaCoreApplication(this.#meiaCoreRPC);
+    this.window = new MeiaCoreWindow(this.#meiaCoreRPC);
 
     this.#attachEventListeners();
   }

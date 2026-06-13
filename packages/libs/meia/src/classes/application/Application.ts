@@ -6,14 +6,18 @@ export class MeiaApplication {
 
   static #core: MeiaCore = new MeiaCore();
 
+  static get _core() {
+    return MeiaApplication.#core;
+  }
+
   static enableDebugMode(enabled: boolean = true) {
     MeiaLogger.enableDebugLogging(enabled);
   }
 
-  static initialize() {
+  static async initialize() {
     this.#logger.log("Initializing Meia application...");
-    this.#core.rpc.core
-      .call("MeiaCoreAPI.Hello", { Name: "Meia" })
-      .then((r) => console.log(r));
+
+    await this.#core.application.ApplicationInit();
+    await this.#core.application.ApplicationStartLoop();
   }
 }
