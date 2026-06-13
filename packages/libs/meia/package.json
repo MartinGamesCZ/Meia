@@ -3,6 +3,10 @@
   "version": "1.0.0",
   "description": "",
   "main": "src/index.ts",
+  "dependencies": {
+    "@meia/core": "workspace:*",
+    "@meia/shared": "workspace:*"
+  },
   "keywords": [],
   "author": "",
   "license": "ISC",

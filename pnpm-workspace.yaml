@@ -1,5 +1,6 @@
 packages:
   - packages/libs/*
+  - packages/libs/@meia/*
   - test-project
 allowBuilds:
   esbuild: true
