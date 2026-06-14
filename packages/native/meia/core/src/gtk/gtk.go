@@ -14,6 +14,9 @@ import (
 // GtkWindow
 type GtkWindow = C.GtkWindow
 
+// GtkWidget
+type GtkWidget = C.GtkWidget
+
 var (
 	dispatchQueue = make(chan func(), 1024)
 	queueMutex    sync.Mutex
@@ -91,4 +94,14 @@ func GtkWidgetShowAll(window *GtkWindow) {
 // gtk_widget_set_size_request
 func GtkWidgetSetSizeRequest(window *GtkWindow, w, h int) {
 	C.gtk_widget_set_size_request((*C.GtkWidget)(unsafe.Pointer(window)), C.int(w), C.int(h))
+}
+
+// gtk_container_add
+func GtkContainerAdd(container *GtkWidget, widget *GtkWidget) {
+	C.gtk_container_add((*C.GtkContainer)(unsafe.Pointer(container)), (*C.GtkWidget)(unsafe.Pointer(widget)))
+}
+
+// Func for converting GtkWindow to GtkWidget
+func GtkWindowToGtkWidget(window *GtkWindow) *GtkWidget {
+	return (*C.GtkWidget)(unsafe.Pointer(window))
 }

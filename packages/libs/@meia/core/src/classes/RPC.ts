@@ -18,6 +18,7 @@ export class MeiaRPC extends MeiaEventEmitter<MeiaRPCEventNames> {
   #exitHandler = () => {
     this.kill();
   };
+  #stderr: string = "";
 
   get isRunning() {
     return this.#isRunning;
@@ -35,7 +36,10 @@ export class MeiaRPC extends MeiaEventEmitter<MeiaRPCEventNames> {
     this.#process.on("exit", (code) => this.#handleExit(code ?? -1));
     this.#process.on("spawn", () => (this.#isRunning = true));
     this.#process.stdout?.on("data", this.#handleData.bind(this));
-    this.#process.stderr?.on("data", this.#handleData.bind(this));
+    this.#process.stderr?.on("data", (chunk) => {
+      this.#handleData(chunk);
+      this.#stderr += chunk.toString();
+    });
 
     process.on("exit", this.#exitHandler);
   }
@@ -119,6 +123,6 @@ export class MeiaRPC extends MeiaEventEmitter<MeiaRPCEventNames> {
 
     this.#isRunning = false;
     process.off("exit", this.#exitHandler);
-    this.emit("exit", code);
+    this.emit("exit", code, this.#stderr);
   }
 }

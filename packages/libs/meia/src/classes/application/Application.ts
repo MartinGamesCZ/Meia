@@ -2,22 +2,28 @@ import { MeiaLogger } from "@meia/shared";
 import { MeiaCore } from "@meia/core";
 
 export class MeiaApplication {
-  static #logger: MeiaLogger = new MeiaLogger(MeiaApplication.name);
+  static #instance: MeiaApplication;
 
-  static #core: MeiaCore = new MeiaCore();
-
-  static get _core() {
-    return MeiaApplication.#core;
+  static get instance() {
+    if (!this.#instance) this.#instance = new MeiaApplication();
+    return this.#instance;
   }
 
-  static enableDebugMode(enabled: boolean = true) {
+  #logger: MeiaLogger = new MeiaLogger(MeiaApplication.name);
+  static #core: MeiaCore = new MeiaCore();
+
+  static get $core() {
+    return this.#core;
+  }
+
+  enableDebugMode(enabled: boolean = true) {
     MeiaLogger.enableDebugLogging(enabled);
   }
 
-  static async initialize() {
+  async initialize() {
     this.#logger.log("Initializing Meia application...");
 
-    await this.#core.application.ApplicationInit();
-    await this.#core.application.ApplicationStartLoop();
+    await MeiaApplication.$core.application.ApplicationInit();
+    await MeiaApplication.$core.application.ApplicationStartLoop();
   }
 }
